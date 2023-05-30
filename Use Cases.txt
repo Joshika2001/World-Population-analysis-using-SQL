@@ -1,0 +1,75 @@
+import sqlite3
+!pip install ipython-sql
+pip install --upgrade pip
+%load_ext sql
+%sql sqlite:///factbook.db
+
+%%sql
+select current_date;
+
+%%sql
+SELECT *
+  FROM sqlite_master
+ WHERE type='table';
+ 
+ 
+%%sql
+SELECT *
+FROM facts
+
+%%sql
+select * from facts where name="India";
+
+%%sql
+SELECT MIN(population) AS min_pop,
+       MAX(population) AS max_pop,
+       MIN(population_growth) AS min_pop_growth,
+       MAX(population_growth) AS max_pop_growth 
+  FROM facts
+ WHERE name <> 'World';
+ 
+%%sql
+select * from facts where name like "I%" or code like "i_";
+
+%%sql
+select max(population), * from facts where name <> 'World';
+
+%%sql
+select min(population_growth), * from facts where name <> 'World';
+
+%%sql
+select name,area_water from facts order by area_water desc limit 5;
+ 
+%%sql
+with cte as(
+select *, dense_rank()over(order by area desc) as dr from facts
+)
+select * from cte where dr=7;
+
+
+%%sql
+select name,area_land,area_water,Indicator,case when Indicator like "-" then "Water is equals to land"
+when Indicator like "__" then "water is same as land" 
+when Indicator like "___" then "land area is more than land"
+else "land are is too high than water area"
+end as Comparison 
+from (select *, area_land-area_water AS Indicator from facts);
+
+
+%%sql
+SELECT AVG(population) AS avg_population, AVG(area) AS avg_area
+  FROM facts
+ WHERE name <> 'World';
+ 
+%%sql
+SELECT name, population, area
+  FROM facts
+ WHERE population > (SELECT AVG(population)
+                       FROM facts
+                    )
+   AND area < (SELECT AVG(area)
+                 FROM facts
+)
+    ORDER BY 2 DESC;
+	
+	
